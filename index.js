@@ -22,19 +22,27 @@ app.use(express.json())
 
   app.get('/api/notes/:id',(request,response) => {
     const id = request.params.id
-    const note = notes.find(note => note.id == id)
-    response.json(note).status(200)        
+    const note = Note.findById(id).then(note=>{
+      response.json(note)
+    })
+    // const note = notes.find(note => note.id == id)
+    // response.json(note).status(200)        
   })
 
 app.post('/api/notes',(request,response) => {
-    const randomId = Math.floor(1 + Math.random() * 1000000).toString()
-    const note = {
-        id: randomId,
-        content: request.body.content,
-        important: false
+    const body = request.body
+    if(body === undefined){
+      return response.status(400).json('content mising')
+
     }
-    notes = notes.concat(note)
-    response.json(note)
+
+    const note = {
+        content: request.body.content,
+        important: body.important || false
+    }
+    note.save().then(saved =>{
+      response.json(saved)
+    })
 })
 app.put('/api/notes/:id',(request,response)=> {
     notes.map(note => note.id == request.params.id ? request.body : note)
